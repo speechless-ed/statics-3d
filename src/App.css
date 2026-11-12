@@ -269,3 +269,267 @@ h2 {
     border-top: 1px solid var(--line);
   }
 }
+
+.modnav {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  margin-bottom: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.modnav button {
+  flex: 1;
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  border-radius: 7px;
+  padding: 7px 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.modnav button.active {
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.modnav button:not(.active):hover {
+  color: var(--text);
+}
+
+.pt {
+  margin-bottom: 12px;
+}
+
+.pt-name {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.coords {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.coord {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.coord input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.seg span {
+  width: 100%;
+}
+
+.seg button {
+  flex: 1;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.seg button.active {
+  color: var(--text);
+  border-color: var(--accent);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.step {
+  margin-bottom: 14px;
+}
+
+.step:last-child {
+  margin-bottom: 0;
+}
+
+.step-title {
+  font-size: 13px;
+  margin-bottom: 2px;
+  color: var(--text);
+}
+
+.step-title b {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #1a1203;
+  font-size: 11px;
+  margin-right: 4px;
+}
+
+.small {
+  font-size: 12px !important;
+}
+
+.step .row {
+  grid-template-columns: 40px 1fr auto;
+}
+
+/* The logo has a pure black background; "lighten" lets the panel colour show through it. */
+.brand {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  margin: -6px auto 2px;
+  mix-blend-mode: lighten;
+}
+
+@media (max-width: 820px) {
+  .brand {
+    max-width: 150px;
+  }
+}
+
+/* Overlay that holds the 3D text labels; its own stacking context keeps them under the buttons. */
+.labels {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.views {
+  z-index: 1;
+}
+
+/* ---- Full-screen 3D view ---- */
+.stage {
+  grid-row: 1;
+  grid-column: 1;
+}
+
+.panel {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+.stage.full {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  z-index: 50;
+  background: var(--bg);
+}
+
+body.no-scroll {
+  overflow: hidden;
+}
+
+.fs-btn {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(17, 26, 44, 0.85);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.fs-btn:hover {
+  border-color: var(--accent);
+}
+
+.stage.full .views {
+  top: max(12px, env(safe-area-inset-top));
+}
+
+.stage.full .hint {
+  bottom: max(10px, env(safe-area-inset-bottom));
+}
+
+@media (max-width: 820px) {
+  .stage {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .panel {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+
+/* ---- Press effect for action buttons: colours invert and the button shrinks a little ---- */
+.btn-row button,
+.answers + .btn-row button {
+  border: 1px solid var(--accent);
+  transition: background-color 0.12s, color 0.12s, border-color 0.12s, transform 0.12s, box-shadow 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.btn-row button.ghost {
+  border-color: var(--line);
+}
+
+/* filled (amber) buttons -> dark button with amber letters */
+.btn-row button:active,
+.btn-row button.pressed {
+  background: var(--bg);
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: scale(0.95);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.35);
+}
+
+/* outlined (ghost) buttons -> light button with dark letters */
+.btn-row button.ghost:active,
+.btn-row button.ghost.pressed {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+  box-shadow: 0 0 0 3px rgba(230, 235, 245, 0.3);
+}
+
+.btn-row button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-row button {
+    transition: none;
+  }
+  .btn-row button:active,
+  .btn-row button.pressed {
+    transform: none;
+  }
+}

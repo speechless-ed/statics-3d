@@ -8,3 +8,6 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+
+// iOS Safari only shows :active (pressed) styles when some touch listener is registered.
+document.addEventListener('touchstart', () => {}, { passive: true })

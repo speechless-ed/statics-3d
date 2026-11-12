@@ -1,18 +1,20 @@
-import { useEffect, useMemo } from 'react'
+import { useContext, useEffect, useMemo, useRef } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, Line, Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { componentsFromAngles } from './physics'
 
 import { COLORS } from './colors'
+import { LabelRoot } from './labelroot'
 
 // Scene units per newton. 2500 N (handout Example 2.4) is 4 units long.
 const SCALE = 0.0016
 const AXIS_LEN = 4.5
 
-function Label({ position, color, plain, children }) {
+export function Label({ position, color, plain, children }) {
+  const portal = useContext(LabelRoot)
   return (
-    <Html position={position} center style={{ pointerEvents: 'none' }}>
+    <Html position={position} center portal={portal ?? undefined} style={{ pointerEvents: 'none' }}>
       <div className={plain ? 'tag plain' : 'tag'} style={{ color }}>
         {children}
       </div>
@@ -21,7 +23,7 @@ function Label({ position, color, plain, children }) {
 }
 
 // Arrow drawn from the origin along `vec` (scene units).
-function Arrow({ vec, color, radius = 0.035, head = 0.3, headRadius = 0.1 }) {
+export function Arrow({ vec, color, radius = 0.035, head = 0.3, headRadius = 0.1 }) {
   const [vx, vy, vz] = vec
   const { quat, len } = useMemo(() => {
     const v = new THREE.Vector3(vx, vy, vz)
@@ -50,7 +52,7 @@ function Arrow({ vec, color, radius = 0.035, head = 0.3, headRadius = 0.1 }) {
   )
 }
 
-function Axes() {
+export function Axes() {
   const axes = [
     { key: 'x', dir: [1, 0, 0], color: COLORS.x },
     { key: 'y', dir: [0, 1, 0], color: COLORS.y },
@@ -231,30 +233,54 @@ function ForceModel({ F, thetaY, phi, showBox, showH, showAngles }) {
   )
 }
 
-// Moves the camera when the `view` prop changes (Front / Top / Side / 3D buttons).
-function ViewSetter({ view }) {
+// How far to back the camera off so a tall, narrow screen still shows the whole model.
+const backOff = (size) => Math.max(1, 0.75 / (size.width / size.height))
+
+// Moves the camera when the `view` prop changes (Front / Top / Side / 3D buttons), and keeps
+// the model in frame when the screen shape changes (rotating a phone, going full screen).
+export function ViewSetter({ view }) {
   const camera = useThree((s) => s.camera)
   const controls = useThree((s) => s.controls)
+  const get = useThree((s) => s.get)
+  const aspect = useThree((s) => s.size.width / s.size.height)
+  const applied = useRef(1)
+
   useEffect(() => {
-    camera.position.set(...view.pos)
-    camera.lookAt(...view.target)
+    const f = backOff(get().size)
+    const t = new THREE.Vector3(...view.target)
+    camera.position.set(...view.pos).sub(t).multiplyScalar(f).add(t)
+    camera.lookAt(t)
     if (controls) {
-      controls.target.set(...view.target)
+      controls.target.copy(t)
       controls.update()
     }
-  }, [view, camera, controls])
+    applied.current = f
+  }, [view, camera, controls, get])
+
+  useEffect(() => {
+    const c = get().controls
+    if (!c) return
+    const ratio = backOff(get().size) / applied.current
+    if (Math.abs(ratio - 1) < 1e-3) return
+    camera.position.sub(c.target).multiplyScalar(ratio).add(c.target)
+    applied.current *= ratio
+    c.update()
+  }, [aspect, camera, get])
+
   return null
 }
 
-export default function Scene({ view, ...force }) {
+export default function Scene({ view, labelRoot, ...force }) {
   return (
     <Canvas camera={{ position: view.pos, fov: 45 }} dpr={[1, 2]} onCreated={({ camera }) => camera.lookAt(...view.target)}>
       <color attach="background" args={['#0b1220']} />
       <ambientLight intensity={0.8} />
       <directionalLight position={[6, 10, 8]} intensity={1.2} />
-      <Axes />
-      <ForceModel {...force} />
-      <OrbitControls makeDefault enableDamping target={view.target} minDistance={4} maxDistance={28} />
+      <LabelRoot.Provider value={labelRoot}>
+        <Axes />
+        <ForceModel {...force} />
+      </LabelRoot.Provider>
+      <OrbitControls makeDefault enableDamping target={view.target} minDistance={4} maxDistance={40} />
       <ViewSetter view={view} />
     </Canvas>
   )

@@ -50,3 +50,39 @@ export const EXAMPLE_2_4_ANSWER = { x: -1060, y: 2120, z: 795 }
 export const EXAMPLE_2_4 = { ...anglesFromVector(EXAMPLE_2_4_VECTOR), F: 2500 }
 
 export const DEFAULT_FORCE = { F: 1500, thetaY: 50, phi: 40 }
+
+// ---- Module 2: force along the line from A to B -----------------------------
+// Handout Example 2.4: the force is F times the unit vector from A toward B.
+//   r  = B - A        d = |r|        lambda = r / d        F_vec = F * lambda
+
+export const vecBetween = (A, B) => ({ x: B.x - A.x, y: B.y - A.y, z: B.z - A.z })
+
+export function forceAlong(F, A, B) {
+  const r = vecBetween(A, B)
+  const d = Math.hypot(r.x, r.y, r.z)
+  if (d < 1e-9) return null
+  const lambda = { x: r.x / d, y: r.y / d, z: r.z / d }
+  return { r, d, lambda, comps: { x: F * lambda.x, y: F * lambda.y, z: F * lambda.z } }
+}
+
+export const EXAMPLE_2_4_POINTS = {
+  A: { x: 0, y: 0, z: 0 },
+  B: { x: -40, y: 80, z: 30 },
+  F: 2500,
+}
+
+const randInt = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1))
+
+// A random practice problem with whole-metre coordinates inside the 3D view
+// (|coordinate| <= 60 m), a clear separation between A and B, and F in whole hundreds of N.
+export function randomPracticeProblem() {
+  for (;;) {
+    const A = { x: randInt(-30, 30), y: randInt(0, 30), z: randInt(-30, 30) }
+    const B = { x: randInt(-60, 60), y: randInt(0, 60), z: randInt(-60, 60) }
+    const r = vecBetween(A, B)
+    const d = Math.hypot(r.x, r.y, r.z)
+    if (d >= 30 && Math.abs(r.x) >= 10 && Math.abs(r.y) >= 10 && Math.abs(r.z) >= 10) {
+      return { A, B, F: randInt(5, 30) * 100 }
+    }
+  }
+}
